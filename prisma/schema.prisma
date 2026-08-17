@@ -1,0 +1,179 @@
+// JalurASN — skema database
+// Provider: PostgreSQL (Neon / Supabase / Vercel Postgres)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =========================================================
+// AKUN (login email + kata sandi)
+// =========================================================
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  /// Wajib & unik. Disimpan dalam huruf kecil semua.
+  email     String   @unique
+  /// Hasil scrypt: "scrypt:<salt>:<hash>". Kata sandi asli tidak pernah disimpan.
+  passwordHash String
+  image     String?
+  createdAt DateTime @default(now())
+
+  // --- Pengaman percobaan masuk beruntun ---
+  gagalMasuk     Int       @default(0)
+  terkunciSampai DateTime?
+
+  // --- Profil pejuang CPNS -------------------------------
+  namaTampilan     String?
+  targetInstansi   String?
+  targetFormasi    String?
+  targetProvinsi   String?
+  pendidikan       String?
+  bio              String?  @db.Text
+  tampilDiPeringkat Boolean @default(true)
+
+  // --- Status mentor (sudah lolos CPNS/PPPK) -------------
+  isMentor      Boolean @default(false)
+  tahunLolos    Int?
+  instansiLolos String?
+
+  attempts     Attempt[]
+  comments     Comment[]
+  commentVotes CommentVote[]
+  stories      Story[]
+  bookmarks    Bookmark[]
+
+  @@index([targetInstansi])
+  @@index([isMentor])
+}
+
+// =========================================================
+// TRY OUT
+// =========================================================
+
+enum StatusAttempt {
+  BERLANGSUNG
+  SELESAI
+  KADALUARSA
+}
+
+model Attempt {
+  id      String @id @default(cuid())
+  userId  String
+  paketId String
+
+  status     StatusAttempt @default(BERLANGSUNG)
+  mulaiPada  DateTime      @default(now())
+  batasPada  DateTime // mulaiPada + durasi paket
+  selesaiPada DateTime?
+  durasiDetik Int      @default(0) // waktu yang benar-benar dipakai
+
+  // Hasil (diisi saat submit)
+  skorTWK   Int @default(0)
+  skorTIU   Int @default(0)
+  skorTKP   Int @default(0)
+  skorTotal Int @default(0)
+
+  benarTWK Int @default(0)
+  benarTIU Int @default(0)
+
+  lulusTWK   Boolean @default(false)
+  lulusTIU   Boolean @default(false)
+  lulusTKP   Boolean @default(false)
+  lulusSemua Boolean @default(false)
+
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answers AttemptAnswer[]
+
+  @@index([userId, paketId])
+  @@index([paketId, skorTotal])
+  @@index([status])
+}
+
+model AttemptAnswer {
+  id        String  @id @default(cuid())
+  attemptId String
+  soalId    String
+  nomor     Int
+  kategori  String // TWK | TIU | TKP
+  jawaban   String? // "A".."E", null = dikosongkan
+  benar     Boolean @default(false)
+  poin      Int     @default(0)
+  raguRagu  Boolean @default(false)
+  detikDipakai Int  @default(0)
+
+  attempt Attempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  @@unique([attemptId, soalId])
+  @@index([attemptId])
+}
+
+// =========================================================
+// KOMUNITAS
+// =========================================================
+
+// Diskusi menempel pada satu soal — tiap soal punya "ruang kelas" sendiri.
+model Comment {
+  id       String   @id @default(cuid())
+  soalId   String
+  paketId  String
+  userId   String
+  isi      String   @db.Text
+  parentId String?
+  dihapus  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent  Comment?      @relation("Balasan", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[]     @relation("Balasan")
+  votes   CommentVote[]
+
+  @@index([soalId, createdAt])
+  @@index([userId])
+}
+
+model CommentVote {
+  id        String @id @default(cuid())
+  commentId String
+  userId    String
+
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId])
+}
+
+// Cerita perjuangan — termasuk cerita GAGAL, bukan hanya yang lolos.
+model Story {
+  id         String   @id @default(cuid())
+  userId     String
+  judul      String
+  isi        String   @db.Text
+  tahunUjian Int?
+  instansi   String?
+  hasilnya   String? // "LOLOS" | "BELUM LOLOS"
+  tayang     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tayang, createdAt])
+}
+
+model Bookmark {
+  id      String   @id @default(cuid())
+  userId  String
+  soalId  String
+  paketId String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, soalId])
+}

@@ -1,0 +1,9 @@
+# Samakan akhir baris agar kontributor Windows, macOS, dan Linux
+# tidak menghasilkan diff palsu.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff binary
+*.woff2 binary

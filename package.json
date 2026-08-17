@@ -1,0 +1,38 @@
+{
+  "name": "jalur-asn",
+  "version": "1.0.0",
+  "private": true,
+  "description": "JalurASN — Platform gratis pejuang CPNS 2026: try out SKD, pembahasan, dan komunitas.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
+    "check:soal": "node scripts/validate-questions.mjs",
+    "cek:auth": "node scripts/cek-auth.mjs",
+    "reset:sandi": "node scripts/reset-sandi.mjs",
+    "uji:sandi": "node --experimental-strip-types scripts/uji-sandi.ts",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.16.2",
+    "next": "^15.5.4",
+    "next-auth": "^5.0.0-beta.29",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.13",
+    "@types/node": "^22.15.3",
+    "@types/react": "^19.1.9",
+    "@types/react-dom": "^19.1.7",
+    "prisma": "^6.16.2",
+    "tailwindcss": "^4.1.13",
+    "typescript": "^5.9.2"
+  },
+  "engines": {
+    "node": ">=20.11"
+  }
+}
