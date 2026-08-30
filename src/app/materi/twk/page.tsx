@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 
 const TOPIK_TWK = [
@@ -13,6 +14,7 @@ const TOPIK_TWK = [
       "Kepentingan nasional",
       "Contoh penerapan nasionalisme dalam kehidupan",
     ],
+    link: "/materi/twk/nasionalisme",
   },
   {
     nomor: "02",
@@ -26,6 +28,7 @@ const TOPIK_TWK = [
       "Anti korupsi",
       "Contoh perilaku berintegritas",
     ],
+    link: "/materi/twk/integritas",
   },
   {
     nomor: "03",
@@ -39,6 +42,7 @@ const TOPIK_TWK = [
       "Menjaga keutuhan NKRI",
       "Contoh bela negara dalam kehidupan sehari-hari",
     ],
+    link: "/materi/twk/bela-negara",
   },
   {
     nomor: "04",
@@ -52,6 +56,7 @@ const TOPIK_TWK = [
       "Bhinneka Tunggal Ika",
       "Penerapan nilai-nilai pilar negara",
     ],
+    link: "/materi/twk/pilar-negara",
   },
   {
     nomor: "05",
@@ -65,6 +70,7 @@ const TOPIK_TWK = [
       "Ejaan dan penggunaan tanda baca",
       "Pemahaman teks",
     ],
+    link: "/materi/twk/bahasa-indonesia",
   },
 ];
 
@@ -178,12 +184,13 @@ export default function MateriTWKPage() {
                     ))}
                   </div>
 
-                  <button
-                    type="button"
-                    className="mt-6 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-indigo-500"
+                  {/* TOMBOL LINK MATERI */}
+                  <Link
+                    href={topik.link}
+                    className="mt-6 inline-flex rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-indigo-500"
                   >
                     Baca Materi →
-                  </button>
+                  </Link>
                 </div>
               </div>
             </article>
