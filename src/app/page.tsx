@@ -2,7 +2,12 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PAKET, WARNA_TINGKAT } from "@/data/paket";
-import { ATURAN, TOTAL_SOAL, SKOR_MAKS_TOTAL, URUTAN_KATEGORI } from "@/lib/skd";
+import {
+  ATURAN,
+  TOTAL_SOAL,
+  SKOR_MAKS_TOTAL,
+  URUTAN_KATEGORI,
+} from "@/lib/skd";
 import { Badge, ButtonLink, Card } from "@/components/ui";
 
 export const revalidate = 300;
@@ -14,9 +19,9 @@ async function statistik() {
       prisma.attempt.count({ where: { status: "SELESAI" } }),
       prisma.comment.count({ where: { dihapus: false } }),
     ]);
+
     return { pengguna, attempt, diskusi };
   } catch {
-    // Database belum dikonfigurasi — halaman tetap tampil.
     return { pengguna: 0, attempt: 0, diskusi: 0 };
   }
 }
@@ -28,8 +33,21 @@ export default async function Beranda() {
   return (
     <>
       {/* ================= HERO ================= */}
-      <section className="bg-grid relative overflow-hidden border-b border-slate-200 dark:border-slate-800">
-        <div className="pointer-events-none absolute -top-32 left-1/2 h-72 w-[42rem] -translate-x-1/2 rounded-full bg-indigo-500/15 blur-3xl" />
+      <section
+        className="relative overflow-hidden border-b border-slate-200 dark:border-slate-800"
+        style={{
+          backgroundImage: "url('/images/background-tactix.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
+        {/* Overlay tipis — background tetap terlihat tajam */}
+        <div className="pointer-events-none absolute inset-0 bg-white/40 dark:bg-slate-950/45" />
+
+        {/* Efek cahaya dekorasi */}
+        <div className="pointer-events-none absolute -top-32 left-1/2 h-72 w-[42rem] -translate-x-1/2 rounded-full bg-indigo-500/10 blur-3xl" />
+
         <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
           <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
             <div>
@@ -64,6 +82,7 @@ export default async function Beranda() {
                     <PanahKanan />
                   </ButtonLink>
                 )}
+
                 <ButtonLink href="/tryout" varian="sekunder" ukuran="lg">
                   Lihat 10 Paket Try Out
                 </ButtonLink>
@@ -74,23 +93,35 @@ export default async function Beranda() {
                   angka={`${PAKET.length * TOTAL_SOAL}+`}
                   label="soal berpembahasan"
                 />
+
                 <AngkaStat
-                  angka={stat.attempt > 0 ? stat.attempt.toLocaleString("id-ID") : "—"}
+                  angka={
+                    stat.attempt > 0
+                      ? stat.attempt.toLocaleString("id-ID")
+                      : "—"
+                  }
                   label="try out dikerjakan"
                 />
+
                 <AngkaStat
-                  angka={stat.pengguna > 0 ? stat.pengguna.toLocaleString("id-ID") : "—"}
+                  angka={
+                    stat.pengguna > 0
+                      ? stat.pengguna.toLocaleString("id-ID")
+                      : "—"
+                  }
                   label="pejuang bergabung"
                 />
               </dl>
             </div>
 
-            {/* Kartu cerita pendiri */}
-            <Card className="relative overflow-hidden p-6 sm:p-8">
+            {/* ================= CERITA PENDIRI ================= */}
+            <Card className="relative overflow-hidden bg-white/90 p-6 shadow-xl sm:p-8 dark:bg-slate-900/90">
               <div className="absolute top-0 right-0 h-24 w-24 rounded-bl-[3rem] bg-indigo-500/10" />
+
               <p className="text-xs font-bold tracking-widest text-indigo-600 uppercase dark:text-indigo-400">
                 Kenapa situs ini ada
               </p>
+
               <ol className="mt-5 space-y-5">
                 <BarisPerjalanan
                   tahun="2019"
@@ -98,12 +129,14 @@ export default async function Beranda() {
                   hasil="7 besar di SKD, belum lolos"
                   nada="gagal"
                 />
+
                 <BarisPerjalanan
                   tahun="2021"
                   instansi="Kejaksaan — Jawa Barat"
                   hasil="Hasil lebih jauh dari target"
                   nada="gagal"
                 />
+
                 <BarisPerjalanan
                   tahun="2024"
                   instansi="Diskominfo Pemda Pringsewu"
@@ -111,6 +144,7 @@ export default async function Beranda() {
                   nada="lolos"
                 />
               </ol>
+
               <p className="mt-6 border-t border-slate-200 pt-5 text-sm leading-6 text-slate-600 dark:border-slate-800 dark:text-slate-300">
                 Lima tahun, tiga kali daftar. Yang bikin lama bukan soal yang
                 terlalu sulit — tapi <strong>niat yang belum bulat</strong> dan{" "}
@@ -133,42 +167,52 @@ export default async function Beranda() {
         <div className="mt-10 grid gap-5 md:grid-cols-3">
           {URUTAN_KATEGORI.map((kode) => {
             const a = ATURAN[kode];
+
             const aksen = {
               TWK: "from-emerald-500 to-teal-500",
               TIU: "from-sky-500 to-indigo-500",
               TKP: "from-amber-500 to-orange-500",
             }[kode];
+
             return (
               <Card key={kode} className="overflow-hidden">
                 <div className={`h-1.5 bg-gradient-to-r ${aksen}`} />
+
                 <div className="p-6">
                   <div className="flex items-baseline justify-between">
                     <h3 className="text-xl font-bold text-slate-900 dark:text-white">
                       {a.nama}
                     </h3>
+
                     <span className="text-sm font-semibold text-slate-400">
                       {a.jumlahSoal} soal
                     </span>
                   </div>
+
                   <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
                     {a.namaPanjang}
                   </p>
+
                   <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-300">
                     {a.deskripsi}
                   </p>
+
                   <div className="mt-5 flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 dark:bg-slate-800/60">
                     <div>
                       <p className="text-[11px] font-semibold tracking-wider text-slate-500 uppercase">
                         Ambang batas
                       </p>
+
                       <p className="text-2xl font-extrabold text-slate-900 dark:text-white">
                         {a.ambangBatas}
                       </p>
                     </div>
+
                     <div className="text-right">
                       <p className="text-[11px] font-semibold tracking-wider text-slate-500 uppercase">
                         Skor maks
                       </p>
+
                       <p className="text-2xl font-extrabold text-slate-400">
                         {a.skorMaks}
                       </p>
@@ -197,30 +241,35 @@ export default async function Beranda() {
               teks="Isi formasi incaran Anda, lihat berapa pejuang lain yang mengincar formasi sama, sebaran skor mereka, dan estimasi peringkat Anda. SSCASN cuma memberi jumlah pelamar — di sini Anda dapat kualitasnya."
               href="/peringkat"
             />
+
             <Fitur
               ikon={<IkonDiskusi />}
               judul="Ruang Diskusi per Soal"
               teks="Setiap soal punya kolom diskusinya sendiri. Bingung kenapa jawabannya B? Tanya di soal itu juga. Yang sudah paham menjawab, yang sudah lolos ikut mengoreksi."
               href="/tryout"
             />
+
             <Fitur
               ikon={<IkonRadar />}
               judul="Analisis Kelemahan Otomatis"
               teks="Setelah submit, skor dipecah sampai ke sub-materi: analogi, silogisme, deret angka, pilar negara, integritas. Anda langsung tahu 3 materi yang paling merugikan skor Anda."
               href="/riwayat"
             />
+
             <Fitur
               ikon={<IkonMentor />}
               judul="Mentor Alumni Seleksi"
               teks="Peserta yang sudah lolos bisa menandai diri sebagai mentor beserta instansi dan tahun lolosnya. Anda bisa bertanya ke orang yang benar-benar pernah melewatinya."
               href="/komunitas/mentor"
             />
+
             <Fitur
               ikon={<IkonCerita />}
               judul="Cerita Gagal, Bukan Cuma Sukses"
               teks="Ruang khusus untuk cerita yang belum lolos. Karena yang paling melemahkan mental pejuang CPNS adalah merasa dirinya satu-satunya yang gagal."
               href="/komunitas"
             />
+
             <Fitur
               ikon={<IkonKalender />}
               judul="Linimasa & Info Seleksi"
@@ -247,14 +296,20 @@ export default async function Beranda() {
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-sm font-extrabold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                     {String(p.nomor).padStart(2, "0")}
                   </span>
-                  <Badge className={WARNA_TINGKAT[p.tingkat]}>{p.tingkat}</Badge>
+
+                  <Badge className={WARNA_TINGKAT[p.tingkat]}>
+                    {p.tingkat}
+                  </Badge>
                 </div>
+
                 <h3 className="mt-4 text-base font-bold text-slate-900 group-hover:text-indigo-700 dark:text-white dark:group-hover:text-indigo-300">
                   {p.nama}
                 </h3>
+
                 <p className="mt-1.5 text-sm leading-6 text-slate-500 dark:text-slate-400">
                   {p.tema}
                 </p>
+
                 <div className="mt-4 flex flex-wrap gap-1.5">
                   {p.fokus.slice(0, 3).map((f) => (
                     <span
@@ -275,18 +330,25 @@ export default async function Beranda() {
       <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
         <div className="relative overflow-hidden rounded-3xl bg-slate-900 px-6 py-14 text-center sm:px-12 dark:bg-indigo-950">
           <div className="pointer-events-none absolute -top-24 left-1/2 h-64 w-[36rem] -translate-x-1/2 rounded-full bg-indigo-500/25 blur-3xl" />
+
           <div className="relative">
             <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
               Yang membedakan lolos dan tidak sering cuma satu: mulai lebih awal.
             </h2>
+
             <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-300">
               Cukup daftar dengan email dan kata sandi, lalu seluruh riwayat
               pengerjaan, pembahasan, serta analisis kelemahan Anda tersimpan
               otomatis. Tidak ada biaya, tidak ada versi premium.
             </p>
+
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               {masuk ? (
-                <ButtonLink href="/tryout" ukuran="lg" className="bg-white text-slate-900 hover:bg-slate-100">
+                <ButtonLink
+                  href="/tryout"
+                  ukuran="lg"
+                  className="bg-white text-slate-900 hover:bg-slate-100"
+                >
                   Buka Daftar Try Out
                   <PanahKanan />
                 </ButtonLink>
@@ -300,6 +362,7 @@ export default async function Beranda() {
                     Daftar Gratis
                     <PanahKanan />
                   </ButtonLink>
+
                   <ButtonLink
                     href="/masuk"
                     ukuran="lg"
@@ -318,7 +381,7 @@ export default async function Beranda() {
 }
 
 // =========================================================
-// Potongan kecil
+// Komponen kecil
 // =========================================================
 
 function HeaderSeksi({
@@ -335,9 +398,11 @@ function HeaderSeksi({
       <p className="text-xs font-bold tracking-widest text-indigo-600 uppercase dark:text-indigo-400">
         {kicker}
       </p>
+
       <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl dark:text-white">
         {judul}
       </h2>
+
       <p className="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">
         {sub}
       </p>
@@ -345,12 +410,19 @@ function HeaderSeksi({
   );
 }
 
-function AngkaStat({ angka, label }: { angka: string; label: string }) {
+function AngkaStat({
+  angka,
+  label,
+}: {
+  angka: string;
+  label: string;
+}) {
   return (
     <div>
       <dt className="text-2xl font-extrabold text-slate-900 sm:text-3xl dark:text-white">
         {angka}
       </dt>
+
       <dd className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">
         {label}
       </dd>
@@ -380,18 +452,30 @@ function BarisPerjalanan({
           }
         >
           {nada === "lolos" ? (
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="3">
-              <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+            <svg
+              viewBox="0 0 24 24"
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+            >
+              <path
+                d="M5 13l4 4L19 7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           ) : (
             <span className="text-xs font-bold">·</span>
           )}
         </span>
       </div>
+
       <div className="-mt-0.5">
         <p className="text-sm font-bold text-slate-900 dark:text-white">
           {tahun} · {instansi}
         </p>
+
         <p
           className={
             nada === "lolos"
@@ -423,9 +507,11 @@ function Fitur({
         <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300">
           {ikon}
         </div>
+
         <h3 className="mt-4 text-base font-bold text-slate-900 dark:text-white">
           {judul}
         </h3>
+
         <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">
           {teks}
         </p>
@@ -436,8 +522,18 @@ function Fitur({
 
 function PanahKanan() {
   return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5">
-      <path d="M5 12h14M13 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+    >
+      <path
+        d="M5 12h14M13 6l6 6-6 6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -459,6 +555,7 @@ function IkonPeta() {
     </svg>
   );
 }
+
 function IkonDiskusi() {
   return (
     <svg viewBox="0 0 24 24" {...svgProps}>
@@ -467,6 +564,7 @@ function IkonDiskusi() {
     </svg>
   );
 }
+
 function IkonRadar() {
   return (
     <svg viewBox="0 0 24 24" {...svgProps}>
@@ -476,6 +574,7 @@ function IkonRadar() {
     </svg>
   );
 }
+
 function IkonMentor() {
   return (
     <svg viewBox="0 0 24 24" {...svgProps}>
@@ -485,6 +584,7 @@ function IkonMentor() {
     </svg>
   );
 }
+
 function IkonCerita() {
   return (
     <svg viewBox="0 0 24 24" {...svgProps}>
@@ -493,6 +593,7 @@ function IkonCerita() {
     </svg>
   );
 }
+
 function IkonKalender() {
   return (
     <svg viewBox="0 0 24 24" {...svgProps}>

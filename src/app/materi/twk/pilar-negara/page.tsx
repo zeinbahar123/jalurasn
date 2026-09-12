@@ -1,6 +1,13 @@
 import Link from "next/link";
+import { wajibPremium } from "@/lib/premium";
 
-export default function MateriPilarNegaraPage() {
+export default async function MateriPilarNegaraPage() {
+  // 🔐 HALAMAN PREMIUM
+  // Belum login → /masuk
+  // FREE → /upgrade
+  // PREMIUM → lanjut membuka materi
+  await wajibPremium();
+
   const pilar = [
     {
       nomor: "01",
@@ -77,9 +84,15 @@ export default function MateriPilarNegaraPage() {
           </Link>
 
           <div className="mt-8">
-            <span className="inline-flex rounded-xl bg-violet-50 px-3 py-2 text-sm font-black text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
-              TWK · MATERI 04
-            </span>
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="inline-flex rounded-xl bg-violet-50 px-3 py-2 text-sm font-black text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
+                TWK · MATERI 04
+              </span>
+
+              <span className="inline-flex rounded-xl bg-amber-100 px-3 py-2 text-sm font-black text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+                ★ PREMIUM
+              </span>
+            </div>
 
             <h1 className="mt-4 text-4xl font-black tracking-tight text-slate-950 sm:text-5xl dark:text-white">
               Pilar Negara
@@ -164,9 +177,9 @@ export default function MateriPilarNegaraPage() {
                 Keempat konsep tersebut saling berkaitan dalam kehidupan
                 berbangsa dan bernegara. Pancasila menjadi dasar negara dan
                 ideologi, UUD Negara Republik Indonesia Tahun 1945 menjadi
-                landasan konstitusional, NKRI merupakan bentuk negara, sedangkan
-                Bhinneka Tunggal Ika menjadi semboyan yang mencerminkan
-                persatuan dalam keberagaman.
+                landasan konstitusional, NKRI merupakan bentuk negara,
+                sedangkan Bhinneka Tunggal Ika menjadi semboyan yang
+                mencerminkan persatuan dalam keberagaman.
               </p>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -260,7 +273,7 @@ export default function MateriPilarNegaraPage() {
               </div>
             </section>
 
-            {/* JEBakan */}
+            {/* JEBAKAN */}
             <section className="rounded-2xl border border-rose-200 bg-rose-50 p-6 dark:border-rose-900/40 dark:bg-rose-950/20">
               <h2 className="text-2xl font-black text-slate-950 dark:text-white">
                 ⚠️ Jebakan yang Sering Muncul

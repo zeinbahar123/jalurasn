@@ -7,7 +7,10 @@ import { getPaket } from "@/data/paket";
 import { getSoalPaket } from "@/lib/soal";
 import { SKOR_MAKS_TOTAL, poinSoal } from "@/lib/skd";
 import { Card, ButtonLink } from "@/components/ui";
-import { PanelPembahasan, type SoalPembahasan } from "@/components/panel-pembahasan";
+import {
+  PanelPembahasan,
+  type SoalPembahasan,
+} from "@/components/panel-pembahasan";
 
 export const dynamic = "force-dynamic";
 
@@ -22,8 +25,12 @@ export default async function HalamanPembahasan({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+
   const session = await auth();
-  if (!session?.user?.id) redirect(`/masuk?lanjut=/pembahasan/${id}`);
+
+  if (!session?.user?.id) {
+    redirect(`/masuk?lanjut=/pembahasan/${id}`);
+  }
 
   const attempt = await prisma.attempt.findUnique({
     where: { id },
@@ -38,35 +45,85 @@ export default async function HalamanPembahasan({
       skorTKP: true,
       lulusSemua: true,
       answers: {
-        select: { soalId: true, jawaban: true, raguRagu: true },
+        select: {
+          soalId: true,
+          jawaban: true,
+          raguRagu: true,
+        },
       },
     },
   });
 
-  if (!attempt || attempt.userId !== session.user.id) notFound();
-  if (attempt.status === "BERLANGSUNG") redirect(`/ujian/${attempt.id}`);
+  if (!attempt || attempt.userId !== session.user.id) {
+    notFound();
+  }
+
+  if (attempt.status === "BERLANGSUNG") {
+    redirect(`/ujian/${attempt.id}`);
+  }
 
   const paket = getPaket(attempt.paketId);
-  if (!paket) notFound();
+
+  if (!paket) {
+    notFound();
+  }
+
+  // ============================================================
+  // PROTEKSI PREMIUM
+  // Paket 1 = Gratis
+  // Paket 2–10 = Premium
+  // ============================================================
+  const paketPremium = paket.nomor > 1;
+
+  if (paketPremium) {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: session.user.id,
+      },
+      select: {
+        subscription: true,
+      },
+    });
+
+    if (!user || user.subscription !== "PREMIUM") {
+      redirect("/upgrade");
+    }
+  }
 
   const soalPaket = getSoalPaket(attempt.paketId);
 
   const petaJawab = new Map(
-    attempt.answers.map((a) => [a.soalId, { jawaban: a.jawaban, ragu: a.raguRagu }]),
+    attempt.answers.map((a) => [
+      a.soalId,
+      {
+        jawaban: a.jawaban,
+        ragu: a.raguRagu,
+      },
+    ]),
   );
 
   // Jumlah komentar per soal (untuk badge)
   const hitungKomentar = await prisma.comment.groupBy({
     by: ["soalId"],
-    where: { paketId: paket.id, dihapus: false },
-    _count: { _all: true },
+    where: {
+      paketId: paket.id,
+      dihapus: false,
+    },
+    _count: {
+      _all: true,
+    },
   });
+
   const petaKomentar = new Map(
-    hitungKomentar.map((h) => [h.soalId, h._count._all]),
+    hitungKomentar.map((h) => [
+      h.soalId,
+      h._count._all,
+    ]),
   );
 
   const soal: SoalPembahasan[] = soalPaket.map((s) => {
     const jw = petaJawab.get(s.id);
+
     return {
       id: s.id,
       nomor: s.nomor,
@@ -98,25 +155,39 @@ export default async function HalamanPembahasan({
         <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
           Pembahasan — {paket.nama}
         </h1>
+
         <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-          Skor Anda {attempt.skorTotal}/{SKOR_MAKS_TOTAL} · TWK {attempt.skorTWK}{" "}
-          · TIU {attempt.skorTIU} · TKP {attempt.skorTKP}
+          Skor Anda {attempt.skorTotal}/{SKOR_MAKS_TOTAL} · TWK{" "}
+          {attempt.skorTWK} · TIU {attempt.skorTIU} · TKP{" "}
+          {attempt.skorTKP}
         </p>
       </div>
 
       <Card className="mt-6 p-5">
         <p className="text-sm leading-7 text-slate-600 dark:text-slate-300">
-          Baca pembahasan soal yang <strong>salah dan yang Anda tandai ragu</strong>{" "}
-          lebih dulu — dua kelompok inilah yang menyimpan tambahan skor terbesar.
-          Kalau setelah membaca pembahasan masih ada yang mengganjal, tekan tombol
-          <strong> Diskusi</strong> di bawah soal dan tanyakan langsung. Peserta
-          lain dan mentor yang sudah lolos bisa ikut menjawab di sana.
+          Baca pembahasan soal yang{" "}
+          <strong>salah dan yang Anda tandai ragu</strong> lebih dulu
+          — dua kelompok inilah yang menyimpan tambahan skor terbesar.
+          Kalau setelah membaca pembahasan masih ada yang mengganjal,
+          tekan tombol <strong>Diskusi</strong> di bawah soal dan
+          tanyakan langsung. Peserta lain dan mentor yang sudah lolos
+          bisa ikut menjawab di sana.
         </p>
+
         <div className="mt-4 flex flex-wrap gap-3">
-          <ButtonLink href={`/tryout/${paket.slug}`} varian="sekunder" ukuran="sm">
+          <ButtonLink
+            href={`/tryout/${paket.slug}`}
+            varian="sekunder"
+            ukuran="sm"
+          >
             Kerjakan ulang paket ini
           </ButtonLink>
-          <ButtonLink href="/tryout" varian="halus" ukuran="sm">
+
+          <ButtonLink
+            href="/tryout"
+            varian="halus"
+            ukuran="sm"
+          >
             Paket try out lainnya
           </ButtonLink>
         </div>
